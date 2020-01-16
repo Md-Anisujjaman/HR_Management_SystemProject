@@ -1,0 +1,149 @@
+<h1 id="tableLabel">Leave Index</h1>
+
+
+
+<p *ngIf="!LeaveList"><em class="text-info">Loading...</em></p>
+
+
+<div class="btn-group">
+  <button class="btn btn-primary" (click)="LoadList()">
+  <i class="fa fa-refresh"></i>
+  </button>
+
+  <button type="button" data-toggle="modal" data-target="#leaveModal" class="btn btn-success">
+    <i class="fa fa-plus"></i>
+  </button>
+  <button type="button" [useExistingCss]="true" styleSheetFile="style.css" class="btn btn-primary" printSectionId="print-section" ngxPrint><i class="fa fa-print"></i></button>
+</div>
+
+
+<div id="print-section">
+  <table class='table table-striped' aria-labelledby="tableLabel" *ngIf="LeaveList">
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>Category</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+        <th>Total Leave</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let l of LeaveList | paginate: {itemsPerPage: 5, currentPage: p}">
+        <td>{{ l.leaveId }}</td>
+        <td>{{ l.leaveCategory }}</td>
+        <td>{{ l.startDate }}</td>
+        <td>{{ l.endDate }}</td>
+        <td>{{ l.totalLeave }}</td>
+        <td>{{ l.approvalStatus }}</td>
+        <td class="btn-group">
+          <button class="btn btn-primary" (click)="GetLeave(l.leaveId)"> <i class="fa fa-edit"></i></button>
+          <button class="btn btn-danger" (click)="DeleteConfirmation(l)"> <i class="fa fa-trash-o"></i></button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<pagination-controls (pageChange)="p=$event"></pagination-controls>
+
+
+<!-- Modal -->
+<div class="modal fade" id="leaveModal" tabindex="-1" role="dialog" aria-labelledby="leaveModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content"  #form="ngForm" (ngSubmit)="form.form.valid && SubmitLeave(form)" autocomplete="off" >
+      <div class="modal-header">
+        <h5 class="modal-title" id="leaveModalLabel">Leave Entry</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" name="leaveId" [(ngModel)]="Leave.leaveId" />
+        <div class="form-group">
+          <label>Leave Type</label>
+          <select class=" form-control" name="leaveCategory" #leaveCategory="ngModel" [ngClass]="{'is-invalid':form.submitted && leaveCategory.invalid }" required="" [(ngModel)]="Leave.leaveCategory" >
+            <option value="undefined">
+              Please select Value
+            </option>
+            <option value="Medical">Medical</option>
+            <option value="Casual">Casual</option>
+            <option value="Maternity">Maternity</option>
+            <option value="Paternity">Paternity</option>
+            <option value="Special">Special</option>
+          </select>
+        
+        </div>
+        <div class="form-group">
+          <label>Start Date</label>
+          <input type="date" class=" form-control"  name="startDate" #startDate="ngModel" [ngClass]="{'is-invalid':form.submitted && startDate.invalid }" required="" [(ngModel)]="Leave.startDate" />
+        </div>
+
+        <div class="form-group">
+          <label>End Date</label>
+          <input type="date" class=" form-control"  name="endDate" #endDate="ngModel" [ngClass]="{'is-invalid':form.submitted && endDate.invalid }" required="" [(ngModel)]="Leave.endDate" />
+        </div>
+
+
+        <div class="form-group">
+          <label>Total Leave</label>
+          <input type="number" class=" form-control"  name="totalLeave" #totalLeave="ngModel" [ngClass]="{'is-invalid':form.submitted && totalLeave.invalid }" required="" [(ngModel)]="Leave.totalLeave" />
+        </div>
+
+        <div class="form-group">
+          <label>Status</label>
+          <select class=" form-control" name="approvalStatus" #approvalStatus="ngModel" [ngClass]="{'is-invalid':form.submitted && approvalStatus.invalid }" required="" [(ngModel)]="Leave.approvalStatus" >
+            <option value="undefined">
+              Please select Value
+            </option>
+            <option value="Approved">Approved</option>
+            <option value="Not Approved">Not Approved</option>
+          </select>
+        
+        </div>
+
+
+        <div class="form-group">
+          <label>Employee Name</label>
+          <select class=" form-control" name="employeeId" #employeeId="ngModel" [ngClass]="{'is-invalid':form.submitted && employeeId.invalid }" required="" [(ngModel)]="Leave.employeeId">
+
+            <option value="undefined">
+              Please select Value
+            </option>
+            <option *ngFor="let employee of EmployeeList" [ngValue]="employee.employeeId">
+              {{employee.fullName}}
+            </option>
+          </select>
+          <span class="text-danger" *ngIf="Leave.employeeError">{{Leave.employeeError }}</span>
+
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="Cancel()">Close</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="leaveModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="leaveModalLabel">Confirm delete</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <span class="h2 text-warning">Delete {{Leave.fullName}}?</span>
+      </div>
+      <div class="modal-footer btn-group">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+        <button type="button" class="btn btn-primary" (click)="DeleteLeave(Leave.leaveId)">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>

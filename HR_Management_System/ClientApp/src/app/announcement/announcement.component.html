@@ -1,0 +1,113 @@
+<h1 id="tableLabel">Announcement</h1>
+
+
+<p *ngIf="!AnnouncementList"><em class="text-info">Loading...</em></p>
+
+<div class="btn-group">
+  <button class="btn btn-primary" (click)="LoadList()">
+    <i class="fa fa-refresh"></i>
+  </button>
+
+  <button type="button" data-toggle="modal" data-target="#announcementModal" class="btn btn-success">
+    <i class="fa fa-plus"></i>
+  </button>
+  <button type="button" [useExistingCss]="true" styleSheetFile="style.css" class="btn btn-primary" printSectionId="print-section" ngxPrint><i class="fa fa-print"></i></button>
+</div>
+
+<div id="print-section">
+  <table class='table table-striped' aria-labelledby="tableLabel" *ngIf="AnnouncementList">
+    <thead>
+      <tr>
+        <th>Announcement Id</th>
+        <th>Title</th>
+        <th>PostedDate</th>
+        <th>Description</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let a of AnnouncementList | paginate: {itemsPerPage: 5, currentPage: a}">
+        <td>{{ a.announcementId }}</td>
+        <td>{{a.title }}</td>
+        <td>{{a.postedDate }}</td>
+        <td>{{a.description }}</td>
+
+        <td class="btn-group">
+          <button class="btn btn-primary" (click)="GetAnnouncement(a.announcementId)"><i class="fa fa-edit"></i></button>
+          <button class="btn btn-danger" (click)="DeleteConfirmation(a)"><i class="fa fa-trash-o"></i></button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<pagination-controls (pageChange)="a=$event"></pagination-controls>
+
+
+<!-- Modal -->
+<div class="modal fade" id="announcementModal" tabindex="-1" role="dialog" aria-labelledby="announcementModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content" #form="ngForm" (ngSubmit)="form.form.valid && SubmitAnnouncement(form)" autocomplete="off">
+      <div class="modal-header">
+        <h5 class="modal-title" id="announcementModalLabel">New Announcement</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" name="announcementId" [(ngModel)]="Announcement.announcementId" />
+
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" class=" form-control" name="title" #title="ngModel" [ngClass]="{'is-invalid':form.submitted && title.invalid }" [(ngModel)]="Announcement.title" />
+        </div>
+        <div class="form-group">
+          <label>PostedDate</label>
+          <input type="date" class=" form-control" name="postedDate" #postedDate="ngModel" [ngClass]="{'is-invalid':form.submitted && postedDate.invalid }" [(ngModel)]="Announcement.postedDate" />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" class=" form-control" name="description" #description="ngModel" [ngClass]="{'is-invalid':form.submitted && description.invalid }" [(ngModel)]="Announcement.description" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Department</label>
+        <select class=" form-control" name="deptId" #deptId="ngModel" [ngClass]="{'is-invalid':form.submitted && deptId.invalid }" [(ngModel)]="Announcement.deptId">
+
+          <option value="undefined">
+            Please select Value
+          </option>
+          <option *ngFor="let department of DepartmentList" [ngValue]="department.deptId">
+            {{department.departmentName}}
+          </option>
+        </select>
+        <span class="text-danger" *ngIf="Announcement.departmentError">{{Announcement.departmentError }}</span>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="Cancel()">Close</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm delete</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <span class="h2 text-warning">Delete {{Announcement.title}}?</span>
+      </div>
+      <div class="modal-footer btn-group">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+        <button type="button" class="btn btn-primary" (click)="DeleteAnnouncement(Announcement.announcementId)">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
